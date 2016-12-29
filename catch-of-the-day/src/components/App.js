@@ -21,15 +21,30 @@ this.state = {
 }
 
 componentWillMount() {
+  //this runs right before the <App> is rendered.
 this.ref = base.syncState(`${this.props.params.storeId}/fishes`
   , {
   context: this,
   state: 'fishes'
 });
+
+//check if there's any order in local storage.
+const localStorageRef = localStorage.getItem('order-${this.props.params.storeId}');
+if (localStorageRef){
+  //update our App component's order state
+  this.setState({
+  order: JSON.parse(localStorageRef)
+  })
+}
 }
 
 componentWillUnmount(){
 base.removeBinding(this.ref);
+}
+
+componentWillUpdate(nextProps, nextState){
+localStorage.setItem('order-${this.props.params.storeId}',
+    JSON.stringify(nextState.order))
 }
 
 addFish(fish){
@@ -75,7 +90,11 @@ render(){
     }
   </ul>
   </div>
-  <Order fishes={this.state.fishes} order={this.state.order} />
+  <Order
+      fishes={this.state.fishes}
+      order={this.state.order}
+      params={this.props.params}
+  />
   <Inventory addFish={this.addFish} loadSamples={this.loadSamples} />
 </div>
     )
