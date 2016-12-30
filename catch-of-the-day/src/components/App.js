@@ -12,8 +12,10 @@ super();
 
 this.addFish = this.addFish.bind(this);
 this.updateFish = this.updateFish.bind(this);
+this.removeFish = this.removeFish.bind(this);
 this.loadSamples = this.loadSamples.bind(this);
 this.addToOrder = this.addToOrder.bind(this);
+this.removeFromOrder= this.removeFromOrder.bind(this);
 // initial state or known as getinitialState
 this.state = {
                   fishes: {},
@@ -21,49 +23,52 @@ this.state = {
 };
 }
 
-componentWillMount() {
-  //this runs right before the <App> is rendered.
-this.ref = base.syncState(`${this.props.params.storeId}/fishes`
-  , {
-  context: this,
-  state: 'fishes'
-});
+  componentWillMount() {
+    // this runs right before the <App> is rendered
+    this.ref = base.syncState(`${this.props.params.storeId}/fishes`, {
+      context: this,
+      state: 'fishes'
+    });
 
-//check if there's any order in local storage.
-const localStorageRef = localStorage.getItem('order-${this.props.params.storeId}');
-if (localStorageRef){
-  //update our App component's order state
-  this.setState({
-  order: JSON.parse(localStorageRef)
-  })
-}
-}
+    // check if there is any order in localStorage
+    const localStorageRef = localStorage.getItem(`order-${this.props.params.storeId}`);
+    if(localStorageRef) {
+      // update our App component's order state
+      this.setState({
+        order: JSON.parse(localStorageRef)
+      });
+    }
+
+  }
 
 componentWillUnmount(){
 base.removeBinding(this.ref);
 }
 
 componentWillUpdate(nextProps, nextState){
-localStorage.setItem('order-${this.props.params.storeId}',
-    JSON.stringify(nextState.order))
+    localStorage.setItem(`order-${this.props.params.storeId}`, JSON.stringify(nextState.order));
+
 }
 
-addFish(fish){
-              //update our state
-              const fishes = {...this.state.fishes};
-              //add in new fish:
-              const timestamp = Date.now();
-              fishes['fish-${timestamp}'] = fish;
-              //this.state.fishes.fish1=fish; this could be done but it's not preferred. the more complicate round-about version above is preferred.
-              //set state
-              this.setState({fishes})
-}
+  addFish(fish) {
+    // update our state
+    const fishes = {...this.state.fishes};
+    // add in our new fish
+    const timestamp = Date.now();
+    fishes[`fish-${timestamp}`] = fish;
+    // set state
+    this.setState({ fishes });
+  }
 updateFish(key, updatedFish){
 const fishes = {...this.state.fishes};
 fishes[key] = updatedFish;
 this.setState({ fishes });
 }
-
+removeFish(key){
+const fishes = {...this.state.fishes}
+    fishes[key] = null;
+    this.setState({ fishes  });
+}
 loadSamples(){
   this.setState({
     fishes: sampleFishes
@@ -77,6 +82,12 @@ const order = {...this.state.order};
 order[key] = order[key] + 1 || 1;
 //update or state
 this.setState({order: order});
+}
+
+removeFromOrder(key){
+const order = {...this.state.order};
+delete order[key];
+this.setState({ order })
 }
 
 render(){
@@ -100,9 +111,11 @@ render(){
       fishes={this.state.fishes}
       order={this.state.order}
       params={this.props.params}
+      removeFromOrder={this.removeFromOrder}
   />
   <Inventory
         addFish={this.addFish}
+        removeFish={this.addFish}
         loadSamples={this.loadSamples}
         fishes={this.state.fishes}
         updateFish={this.updateFish}
