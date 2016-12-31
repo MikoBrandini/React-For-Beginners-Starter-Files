@@ -119,6 +119,7 @@ render(){
         loadSamples={this.loadSamples}
         fishes={this.state.fishes}
         updateFish={this.updateFish}
+        storeId={this.props.params.storeId}
   />
 </div>
     )
